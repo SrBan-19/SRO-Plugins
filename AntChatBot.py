@@ -3,7 +3,7 @@ import ctypes, time, QtBind, os, subprocess, urllib.request, json
 
 # --- CONFIGURAÇÕES DE VERSÃO E ATUALIZAÇÃO ---
 _n = 'Trade Hide Premium Pro'
-_v = '25.6' 
+_v = '25.8' 
 _update_url = "https://raw.githubusercontent.com/SrBan-19/SRO-Plugins/refs/heads/main/AntChatBot.py"
 _plugin_path = os.path.join(os.getcwd(), "Plugins", "AntChatBot.py")
 
@@ -145,3 +145,4 @@ def btnCapture_clicked():
 
 load_accounts()
 log(f"[{_n}] v{_v} Dev: SrBan ---  AntBot.")
+
