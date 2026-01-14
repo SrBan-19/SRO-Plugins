@@ -1,13 +1,13 @@
 from phBot import *
 import ctypes, time, QtBind, os, subprocess, urllib.request, json
 
-# --- CONFIGURAÇÕES DE VERSÃO E ATUALIZAÇÃO ---
+
 _n = 'Trade Hide Premium Pro'
-_v = '25.0'  # <--- Sempre que atualizar seu código, aumente este número
-_update_url = "LINK_DO_SEU_GITHUB_RAW/AntChatBot.py" # <--- Insira aqui o link RAW do seu GitHub
+_v = '25.1'  
+_update_url = "https://raw.githubusercontent.com/SrBan-19/SRO-Plugins/refs/heads/main/AntChatBot.py" 
 _plugin_path = os.path.join(os.getcwd(), "Plugins", "AntChatBot.py")
 
-# --- FUNÇÃO DE AUTO-UPDATE ---
+
 def check_for_updates():
     try:
         req = urllib.request.Request(_update_url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -25,10 +25,10 @@ def check_for_updates():
         pass
     return False
 
-# Executa a verificação ao carregar o plugin
+
 check_for_updates()
 
-# --- RESTANTE DO CÓDIGO ---
+
 _u32 = ctypes.windll.user32
 _u = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1h7zFy9nH68Dij7bAJutZ0DuYJj1zV9jet8rhAnAMqAcKhmrHoctKjd5uToJor1zV291zCUi4cyrh/pub?output=csv"
 
@@ -51,7 +51,7 @@ except: pass
 
 gui = QtBind.init(__name__, _n)
 
-# --- Interface ---
+
 QtBind.createLabel(gui, f"HWID: {_mid} | v{_v}", 340, 5)
 btnCapture = QtBind.createButton(gui, "btnCapture_clicked", " Capturar Janela ", 15, 25)
 txtNewChar = QtBind.createLineEdit(gui, "", 140, 25, 90, 20)
@@ -91,7 +91,7 @@ def _force_click(entry_str, move_mouse=True):
     except: pass
 
 def handle_joymax(opcode, data):
-    if opcode == 0x190A: # Opcode confirmado pelo utilizador
+    if opcode == 0x190A: 
         if not _auth: return True
         inject_joymax(0x190A, b'\x01', False)
         time.sleep(0.8)
@@ -100,7 +100,7 @@ def handle_joymax(opcode, data):
                 _force_click(entry, move_mouse=True)
     return True
 
-# --- Funções de Gestão e UI ---
+
 def btnStartRoute_clicked():
     if not _auth: return
     sel = QtBind.text(gui, cmbScripts)
