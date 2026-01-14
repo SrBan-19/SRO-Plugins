@@ -3,7 +3,7 @@ import ctypes, time, QtBind, os, subprocess, urllib.request, json
 
 
 _n = 'Trade Hide Premium Pro'
-_v = '25.1'  
+_v = '25.2'  
 _update_url = "https://raw.githubusercontent.com/SrBan-19/SRO-Plugins/refs/heads/main/AntChatBot.py" 
 _plugin_path = os.path.join(os.getcwd(), "Plugins", "AntChatBot.py")
 
@@ -91,9 +91,9 @@ def _force_click(entry_str, move_mouse=True):
     except: pass
 
 def handle_joymax(opcode, data):
-    if opcode == 0x190A: 
+    if opcode == 0x3053: 
         if not _auth: return True
-        inject_joymax(0x190A, b'\x01', False)
+        inject_joymax(0x3053, b'\x01', False)
         time.sleep(0.8)
         for entry in QtBind.getItems(gui, lstChars):
             if "[ON]" in entry:
@@ -158,3 +158,4 @@ def btnCapture_clicked():
 
 load_accounts()
 log(f"Dev: SrBan - Versão {_v} | Auto-Update Ativo.")
+
