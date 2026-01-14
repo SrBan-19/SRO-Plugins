@@ -1,12 +1,10 @@
 from phBot import *
 import ctypes, time, QtBind, os, subprocess, urllib.request, json
 
-
 _n = 'Trade Hide Premium Pro'
-_v = '25.2'  
+_v = '25.3'  
 _update_url = "https://raw.githubusercontent.com/SrBan-19/SRO-Plugins/refs/heads/main/AntChatBot.py" 
 _plugin_path = os.path.join(os.getcwd(), "Plugins", "AntChatBot.py")
-
 
 def check_for_updates():
     try:
@@ -21,13 +19,10 @@ def check_for_updates():
                         f.write(remote_code)
                     log(f"[{_n}] Plugin atualizado com sucesso! Reinicie o phBot ou dê Reload.")
                     return True
-    except:
-        pass
+    except: pass
     return False
 
-
 check_for_updates()
-
 
 _u32 = ctypes.windll.user32
 _u = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1h7zFy9nH68Dij7bAJutZ0DuYJj1zV9jet8rhAnAMqAcKhmrHoctKjd5uToJor1zV291zCUi4cyrh/pub?output=csv"
@@ -50,7 +45,6 @@ try:
 except: pass
 
 gui = QtBind.init(__name__, _n)
-
 
 QtBind.createLabel(gui, f"HWID: {_mid} | v{_v}", 340, 5)
 btnCapture = QtBind.createButton(gui, "btnCapture_clicked", " Capturar Janela ", 15, 25)
@@ -84,23 +78,44 @@ def _force_click(entry_str, move_mouse=True):
                 _u32.GetWindowRect(hw, ctypes.byref(rect))
                 _u32.SetCursorPos(rect.left + cx, rect.top + cy)
             lp = (cy << 16) | (cx & 0xFFFF)
-            _u32.PostMessageW(hw, 0x0201, 0x0001, lp)
+            # Envia o clique de forma forçada
+            _u32.PostMessageW(hw, 0x0201, 0x0001, lp) # WM_LBUTTONDOWN
             time.sleep(0.05)
-            _u32.PostMessageW(hw, 0x0202, 0, lp)
+            _u32.PostMessageW(hw, 0x0202, 0, lp)      # WM_LBUTTONUP
             _log(f"🎯 Clique em {name}")
     except: pass
 
+# --- CORREÇÃO DO OPCODE AQUI ---
 def handle_joymax(opcode, data):
-    if opcode == 0x3053: 
+    # Alterado de 0x3053 para 0x190A (Opcode de Confirmação/Agree)
+    if opcode == 0x190A: 
         if not _auth: return True
-        inject_joymax(0x3053, b'\x01', False)
-        time.sleep(0.8)
+        # Tenta aceitar via pacote primeiro (Invisível)
+        inject_joymax(0x190A, b'\x01', False)
+        
+        # Delay necessário para o jogo processar a janela visualmente
+        time.sleep(1.0) 
+        
+        # Executa o clique visual em todas as janelas marcadas como [ON]
         for entry in QtBind.getItems(gui, lstChars):
             if "[ON]" in entry:
                 _force_click(entry, move_mouse=True)
     return True
 
+def find_sro(t):
+    h = None
+    def _e(hw, lp):
+        nonlocal h
+        ln = _u32.GetWindowTextLengthW(hw)
+        if ln > 0:
+            b = ctypes.create_unicode_buffer(ln + 1)
+            _u32.GetWindowTextW(hw, b, ln + 1)
+            if t in b.value: h = hw; return False
+        return True
+    _u32.EnumWindows(ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)(_e), 0)
+    return h
 
+# --- Restante das funções permanecem as mesmas ---
 def btnStartRoute_clicked():
     if not _auth: return
     sel = QtBind.text(gui, cmbScripts)
@@ -135,19 +150,6 @@ def btnTest_clicked():
     sel = QtBind.text(gui, lstChars)
     if sel: _force_click(sel, move_mouse=True)
 
-def find_sro(t):
-    h = None
-    def _e(hw, lp):
-        nonlocal h
-        ln = _u32.GetWindowTextLengthW(hw)
-        if ln > 0:
-            b = ctypes.create_unicode_buffer(ln + 1)
-            _u32.GetWindowTextW(hw, b, ln + 1)
-            if t in b.value: h = hw; return False
-        return True
-    _u32.EnumWindows(ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)(_e), 0)
-    return h
-
 def btnCapture_clicked():
     hw = find_sro("[NewEvolust]")
     if hw:
@@ -158,4 +160,3 @@ def btnCapture_clicked():
 
 load_accounts()
 log(f"Dev: SrBan - Versão {_v} | Auto-Update Ativo.")
-
