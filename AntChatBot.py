@@ -1,9 +1,14 @@
 from phBot import *
 import ctypes, time, QtBind, os, subprocess, urllib.request, json
 
-
 _n = 'AntBot teleport Trade'
-_v = '26.0' 
+_v = '28.15' 
+
+
+gold_inicial = 0
+gold_acumulado = 0
+trades_entregues = 0
+
 _update_url = "https://raw.githubusercontent.com/SrBan-19/SRO-Plugins/refs/heads/main/AntChatBot.py"
 _plugin_path = os.path.join(os.getcwd(), "Plugins", "AntChatBot.py")
 
@@ -25,11 +30,9 @@ def check_for_updates():
 
 check_for_updates()
 
-
 _u32 = ctypes.windll.user32
 _u = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1h7zFy9nH68Dij7bAJutZ0DuYJj1zV9jet8rhAnAMqAcKhmrHoctKjd5uToJor1zV291zCUi4cyrh/pub?output=csv"
 _folder_path = os.path.join(os.getcwd(), "Plugins", "TradeHide_Configs")
-
 
 if not os.path.exists(_folder_path):
     os.makedirs(_folder_path)
@@ -60,28 +63,53 @@ lstLogs = QtBind.createList(gui, 235, 80, 230, 110)
 btnToggle = QtBind.createButton(gui, "btnToggle_clicked", " ATIVAR/DESATIVAR ", 15, 195)
 btnDel = QtBind.createButton(gui, "btnDel_clicked", " REMOVER ", 15, 220)
 
+
+QtBind.createLabel(gui, "Lucro de Gold:", 235, 195)
+lblGold = QtBind.createLabel(gui, "0", 310, 195)
+QtBind.createLabel(gui, "Trades Entregues:", 235, 215)
+lblTrades = QtBind.createLabel(gui, "0", 330, 215)
+
 def _log(m): QtBind.append(gui, lstLogs, f"[{time.strftime('%H:%M:%S')}] {m}")
 
+
+def event_loop():
+    global gold_inicial, gold_acumulado
+    char_data = get_character_data()
+    if char_data:
+        curr_gold = char_data['gold']
+        if gold_inicial == 0:
+            gold_inicial = curr_gold
+        
+        # Atualiza lucro acumulado (apenas se for positivo para evitar flutuações de gastos)
+        if curr_gold > gold_inicial:
+            gold_acumulado = curr_gold - gold_inicial
+            QtBind.setText(gui, lblGold, "{:,}".format(gold_acumulado))
+
+def handle_chat(t, player, msg):
+    global trades_entregues
+    # t=10 é mensagem de sistema. Altere as palavras-chave conforme o idioma do seu servidor.
+    msg_l = msg.lower()
+    if t == 10:
+        if "settlement" in msg_l or "entregue" in msg_l or "concluded" in msg_l:
+            trades_entregues += 1
+            QtBind.setText(gui, lblTrades, str(trades_entregues))
+            _log(f"📦 Trade concluída! Total: {trades_entregues}")
 
 def _process_click(entry_str):
     try:
         if "[OFF]" in entry_str: return
         parts = entry_str.split("] ")[1]
         name, res = parts.split(" | ")
-        
-        
-        
         rw, rh = map(int, res.split('x'))
         cx = int(rw * (640 / 1366))
         cy = int(rh * (419 / 768))
-        
         hw = find_sro(f"[NewEvolust] {name}")
         if hw:
             lp = (cy << 16) | (cx & 0xFFFF)
-            _u32.PostMessageW(hw, 0x0201, 0x0001, lp) # Botão Esquerdo Down
+            _u32.PostMessageW(hw, 0x0201, 0x0001, lp)
             time.sleep(0.1)
-            _u32.PostMessageW(hw, 0x0202, 0, lp)      # Botão Esquerdo Up
-            _log(f"✔ Auto-Agree: {name} em ({cx},{cy})")
+            _u32.PostMessageW(hw, 0x0202, 0, lp)
+            _log(f"✔ Auto-Agree: {name}")
     except Exception as e: _log(f"❌ Erro clique: {str(e)}")
 
 def handle_joymax(opcode, data):
@@ -92,7 +120,6 @@ def handle_joymax(opcode, data):
             if "[ON]" in entry:
                 _process_click(entry)
     return True
-
 
 def load_accounts():
     QtBind.clear(gui, lstChars)
@@ -166,3 +193,4 @@ def btnCapture_clicked():
 
 load_accounts()
 log(f"[{_n}] v{_v} Iniciado.")
+log("Dev: SrBan ")
