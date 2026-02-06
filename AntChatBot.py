@@ -2,7 +2,7 @@ from phBot import *
 import ctypes, time, QtBind, os, subprocess, urllib.request, json
 
 _n = 'AntBot teleport Trade'
-_v = '28.15' 
+_v = '29.10' 
 
 
 gold_inicial = 0
@@ -194,3 +194,4 @@ def btnCapture_clicked():
 load_accounts()
 log(f"[{_n}] v{_v} Iniciado.")
 log("Dev: SrBan ")
+
